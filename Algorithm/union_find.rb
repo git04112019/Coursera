@@ -1,35 +1,46 @@
 class UnionFind
+	attr_reader :union
 
 	def initialize(connections = Test.connections)
 		@union = []
-		@connections = connections
+		@connections = []
+		@debug = false
 
 		connections.each do |connection|
 			union(connection[0], connection[1])
+			@connections.push(connection)
 		end
 	end
 
 	def union(p, q)
+		# if currently connected
+		if(@connections.include?([p, q]) || @connections.include?([q, p]))
+			return
+		end
+
 		sets = findNumInSet([p, q])
+		# sets = findSetForNum([p, q])
 
 		if (sets[p] == nil && sets[q] == nil)
-			puts "neither #{p} nor #{q} are in a set"
+			puts "neither #{p} nor #{q} are in a set" if @debug
 			@union.push([p, q])
-			# @connections.push([p, q])
+			@connections.push([p, q])
 		elsif (sets[p] != nil && sets[q] == nil)
-			puts "#{q} is not in a set"
+			puts "#{q} is not in a set" if @debug
 			sets[p].push(q)
+			@connections.push([p, q])
 		elsif (sets[p] == nil && sets[q] != nil)
-			puts "#{p} is not in a set"
+			puts "#{p} is not in a set" if @debug
 			sets[q].push(p)
+			@connections.push([p, q])
 		else # both of them are in a set
 			unless (sets[p] == sets[q])
-				puts "both #{p} and #{q} are in a set"
+				puts "both #{p} and #{q} are in a set" if @debug
 				@union.delete(sets[p])
 				@union.delete(sets[q])
 				@union.push(sets[p] | sets[q])
 			else
-				puts "#{p} and #{q} are in the same set already"
+				puts "#{p} and #{q} are in the same set already" if @debug
 			end
 		end
 	end
@@ -68,25 +79,4 @@ class UnionFind
 
 			return numToset
 		end
-end
-
-module Test
-	def self.connections
-		return [
-				[4, 3],
-				[3, 8],
-				[6, 5],
-				[9, 4],
-				[2, 1],
-				[8, 9],
-				[5, 0],
-				[7, 2],
-				[6, 1],
-				[1, 0],
-				[6, 7]]
-	end
-
-	def self.numbers
-		return (0..9).to_a
-	end
 end
