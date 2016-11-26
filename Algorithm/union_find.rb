@@ -64,7 +64,7 @@ class UnionFind
     private
     def findNumInSet(arrayOfNums)
         numToSet = Hash.new
-        
+
         arrayOfNums.each do |num|
             @unionSets.each do |set|
                 if(set.include?(num))
