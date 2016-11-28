@@ -1,34 +1,40 @@
 class UnionFind
-    attr_reader :unionSets
-    attr_reader :connections
     attr_accessor :debug
+    attr_accessor :method
 
-    def initialize(connections)
-        @unionSets = []
+    attr_reader :connectedComponents
+    attr_reader :connections
+
+    def initialize(method = :eager)
+        @connectedComponents = []
         @connections = []
+        @method = method
         @debug = false
+    end
 
+    def loadConnections(connections, numForSet = true)
         connections.each do |connection|
-            union(connection[0], connection[1])
+            union(connection[0], connection[1], numForSet)
             @connections.push(connection)
         end
     end
 
-    def union(p, q, findNumInSet = false)
+    def clear()
+        @connectedComponents = []
+        @connections = []
+    end
+
+    def union(p, q, numForSet = true)
         # if currently connected
         if(@connections.include?([p, q]) || @connections.include?([q, p]))
             return
         end
 
-        if(findNumInSet)
-            sets = findNumInSet([p, q])
-        else
-            sets = findSetForNum([p, q])
-        end
+        sets = find([p, q], numForSet)
 
         if (sets[p] == nil && sets[q] == nil)
             puts "neither #{p} nor #{q} are in a set" if @debug
-            @unionSets.push([p, q])
+            @connectedComponents.push([p, q])
             @connections.push([p, q])
         elsif (sets[p] != nil && sets[q] == nil)
             puts "#{q} is not in a set" if @debug
@@ -41,9 +47,9 @@ class UnionFind
         else # both of them are in a set
             unless (sets[p] == sets[q])
                 puts "both #{p} and #{q} are in a set" if @debug
-                @unionSets.delete(sets[p])
-                @unionSets.delete(sets[q])
-                @unionSets.push(sets[p] | sets[q])
+                @connectedComponents.delete(sets[p])
+                @connectedComponents.delete(sets[q])
+                @connectedComponents.push(sets[p] | sets[q])
             else
                 puts "#{p} and #{q} are in the same set already" if @debug
             end
@@ -53,45 +59,48 @@ class UnionFind
     def connected(p, q)
     end
 
-    def find(p)
+    # p could be a single digit or array
+    def find(p, numForSet = true)
+        arrayOfNums = nil
 
+        if(p.kind_of?(Array))
+            arrayOfNums = p
+            arrayOfNums.uniq!
+        else
+            arrayOfNums = p.to_a
+        end
+
+        numToSet = Hash.new
+
+        if(numForSet)
+            # for each number, look through the sets
+            arrayOfNums.each do |num|
+                @connectedComponents.each do |set|
+                    if(set.include?(num))
+                        numToSet[num] = set
+                        break
+                    end
+                end
+            end
+        else
+            # for each set, find the number
+            @connectedComponents.each do |set|
+                arrayOfNums.each do |num|
+                    if(set.include?(num))
+                        if(numToSet[num] != nil) # if true, number is appearing in multiple sets
+                            puts "UnionFind.findSetForNum found same number in multiple unionSets" if @debug
+                            return
+                        end
+                        numToSet[num] = set
+                    end
+                end
+            end
+        end
+
+        return numToSet
     end
 
     def count()
 
-    end
-
-    private
-    def findNumInSet(arrayOfNums)
-        numToSet = Hash.new
-
-        arrayOfNums.each do |num|
-            @unionSets.each do |set|
-                if(set.include?(num))
-                    numToSet[num] = set
-                    break
-                end
-            end
-        end
-
-        return numToSet
-    end
-
-    def findSetForNum(arrayOfNums)
-        arrayOfNums.uniq!
-        numToSet = Hash.new
-
-        @unionSets.each do |set|
-            arrayOfNums.each do |num|
-                if(set.include?(num))
-                    if(numToSet[num] != nil) # if true, number is appearing in multiple sets
-                        puts "UnionFind.findSetForNum found same number in multiple unionSets" if @debug
-                        return
-                    end
-                    numToSet[num] = set
-                end
-            end
-        end
-        return numToSet
     end
 end
