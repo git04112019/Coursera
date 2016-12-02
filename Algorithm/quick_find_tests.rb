@@ -8,8 +8,8 @@ class QuickFindBenchmarkTests < Test::Unit::TestCase
     def setup
         @divider = "\n----------------------------------------------------------------"
 
-        @iterations = 100000
-        @numObjects = 30000
+        @iterations = 10000000
+        @numObjects = 300000
 
         puts @divider
         puts "generating test data"
